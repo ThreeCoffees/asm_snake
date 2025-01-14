@@ -40,6 +40,50 @@ update_clock PROC
     jne zakoncz_update
 
 ; update positions
+    sub byte PTR cs:food_move_chance, 1
+    jnz no_move_food
+    mov byte PTR cs:food_move_chance, 10
+    ; erase prev food
+    mov ax, cs:food_y
+    mov bx, 320
+    mul bx
+    add ax, cs:food_x
+    mov bx, 8
+    mul bx
+    mov bx, ax
+
+    mov al, 0h
+    call print_pixel
+    
+    ; move food
+    mov ax, cs:food_dir_x
+    add ax, cs:food_x 
+    ; loop around x
+    cmp ax, 0
+    jge check_x_food
+    add ax, 40
+check_x_food:
+    cmp ax, 40
+    jl  x_loopcheck_food
+    sub ax, 40
+x_loopcheck_food:
+    mov cs:food_x, ax
+    
+    ; y
+    mov ax, cs:food_dir_y
+    add ax, cs:food_y 
+    ; loop around y
+    cmp ax, 0
+    jge check_y_food
+    add ax, 25
+check_y_food:
+    cmp ax, 25
+    jl  y_loopcheck_food
+    sub ax, 25
+y_loopcheck_food:
+    mov cs:food_y, ax
+no_move_food:
+; wonsz
     ; shift all positions
     mov si, cs:len
     add si, si
@@ -110,6 +154,7 @@ y_loopcheck_complete:
 
 not_colliding:
 
+
 ; draw
     mov si, 0
 snake_draw_loop:
@@ -162,6 +207,9 @@ zakoncz_update:
     len dw 6 
     food_x dw 10
     food_y dw 15
+    food_dir_x dw 1
+    food_dir_y dw 1
+    food_move_chance dw 2 ; apple runs away half the speed
     wektor8 dd ?
     game_over db 0; T=1 F=0
 
